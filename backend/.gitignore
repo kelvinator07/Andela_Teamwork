@@ -1,0 +1,29 @@
+######################
+# Node
+######################
+node_modules
+build/
+coverage/
+.nyc_output/
+
+######################
+# Intellij
+######################
+.idea/
+*.iml
+*.iws
+*.ipr
+*.ids
+*.orig
+classes/
+out/
+
+######################
+# Visual Studio Code
+######################
+.vscode/
+
+######################
+# ESLint
+######################
+.eslintcache
