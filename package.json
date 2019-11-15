@@ -4,7 +4,7 @@
   "description": "Andela Teamwork Web App Built Using React.js + Node.js",
   "main": "server.js",
   "scripts": {
-    "test": "node_modules/.bin/jasmine",
+    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npm run build && node --exec babel-node ./backend/server.js",
     "start:dev": "nodemon --exec babel-node ./backend/server.js"
   },
@@ -31,12 +31,17 @@
     "nodemon": "^1.19.4"
   },
   "dependencies": {
+    "body-parser": "^1.19.0",
     "chai": "^4.2.0",
+    "cloudinary": "^1.17.0",
     "cookie-parser": "^1.4.4",
     "debug": "^4.1.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "knex": "^0.20.2",
     "mocha": "^6.2.2",
-    "morgan": "^1.9.1"
+    "morgan": "^1.9.1",
+    "pg": "^7.12.1"
   }
 }
