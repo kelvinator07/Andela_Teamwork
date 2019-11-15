@@ -4,8 +4,9 @@
   "description": "Andela Teamwork Web App Built Using React.js + Node.js",
   "main": "server.js",
   "scripts": {
-    "test": "jasmine",
-    "start": "node server.js"
+    "test": "node_modules/.bin/jasmine",
+    "start": "npm run build && node --exec babel-node ./backend/server.js",
+    "start:dev": "nodemon --exec babel-node ./backend/server.js"
   },
   "repository": {
     "type": "git",
@@ -23,9 +24,19 @@
     "@babel/node": "^7.7.0",
     "@babel/preset-env": "^7.7.1",
     "@babel/register": "^7.7.0",
-    "jasmine": "^3.5.0"
+    "eslint": "^6.6.0",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.18.2",
+    "jasmine": "^3.5.0",
+    "nodemon": "^1.19.4"
   },
   "dependencies": {
-    "express": "^4.17.1"
+    "chai": "^4.2.0",
+    "cookie-parser": "^1.4.4",
+    "debug": "^4.1.1",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "mocha": "^6.2.2",
+    "morgan": "^1.9.1"
   }
 }
