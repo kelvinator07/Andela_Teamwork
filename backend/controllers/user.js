@@ -63,3 +63,58 @@ exports.signup = (req, res) => {
     },
   );
 };
+
+exports.signin = (req, res) => {
+
+  db('users').where({
+    email: req.body.email,
+  }).select('*').then(
+    (user) => {
+      if (user.length === 0) {
+        return res.status(401).json({
+          status: 'error',
+          error: 'User Not Found!',
+        });
+      }
+      // compare password If user is found
+      bcrypt.compare(req.body.password, user[0].password).then(
+        (valid) => {
+          if (!valid) {
+            return res.status(401).json({
+              status: 'error',
+              error: 'Incorrect Password!',
+            });
+          }
+
+          const token = jwt.sign(
+            { user: user.id },
+            'RANDOM_SECRET_TOKEN',
+            { expiresIn: '24h' });
+
+          res.status(200).json({
+            status: 'success',
+            data: {
+              token: token,
+              userId: user[0].id,
+            },
+          });
+        },
+      ).catch(
+        (error) => {
+          res.status(500).json({
+            status: 'error',
+            error: error.detail,
+          });
+        },
+      );
+    },
+  )
+    .catch(
+      (error) => {
+        res.status(500).json({
+          status: 'error',
+          error: error.detail,
+        });
+      },
+    );
+};
