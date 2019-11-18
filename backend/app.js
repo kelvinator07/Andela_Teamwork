@@ -1,21 +1,16 @@
 import express from 'express';
-import knex from 'knex';
+import bodyParser from 'body-parser';
+
+import userRoutes from './routes/api/user';
 
 const app = express();
 
-const postgres = knex({
-  client: 'pg',
-  connection: {
-    host: '127.0.0.1',
-    user: 'postgres',
-    password: 'k0l0',
-    database: 'teamwork',
-  },
-});
 
-postgres.select('*').from('users').then((data) => {
-  console.log(data);
-});
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({
+  extended: false,
+}));
 
+app.use('/api/v1/auth', userRoutes);
 
 export default app;
