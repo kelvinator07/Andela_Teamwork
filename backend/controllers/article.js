@@ -54,19 +54,52 @@ exports.editArticle = (req, res) => {
     .update(article, ['title', 'description'])
     .then((data) => {
       if (data.length === 0) {
-        return res.status(401).json({
+        return res.status(404).json({
           status: 'error',
           error: 'Article Not Found!',
         });
       }
       const { title, description } = data[0];
-      res.status(201)
+      res.status(200)
         .json({
           status: 'success',
           data: {
             message: 'Article successfully updated',
             title: title,
             article: description,
+          },
+        });
+    })
+    .catch(
+      (err) => {
+        res.status(500)
+          .json({
+            status: 'error',
+            error: err,
+          });
+      },
+    );
+};
+
+exports.deleteArticle = (req, res) => {
+
+  // Delete Article In DB
+  db('articles')
+    .where({ id: req.params.id })
+    .del()
+    .then((data) => {
+      if (data === 0) {
+        return res.status(404).json({
+          status: 'error',
+          error: 'Article Not Found!',
+        });
+      }
+
+      res.status(200)
+        .json({
+          status: 'success',
+          data: {
+            message: 'Article successfully deleted',
           },
         });
     })
