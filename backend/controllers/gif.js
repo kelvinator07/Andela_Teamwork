@@ -71,3 +71,37 @@ exports.createGif = (req, res) => {
   //     }
   //   });
 };
+
+
+exports.deleteGif = (req, res) => {
+
+  // Delete Article In DB
+  db('gifs')
+    .where({ id: req.params.id })
+    .del()
+    .then((data) => {
+      if (data === 0) {
+        return res.status(404).json({
+          status: 'error',
+          error: 'Gif Not Found!',
+        });
+      }
+
+      res.status(200)
+        .json({
+          status: 'success',
+          data: {
+            message: 'Gif successfully deleted',
+          },
+        });
+    })
+    .catch(
+      (err) => {
+        res.status(500)
+          .json({
+            status: 'error',
+            error: err,
+          });
+      },
+    );
+};
