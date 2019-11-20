@@ -9,6 +9,8 @@ router.get('/articles', auth, articleCtrl.getAllArticles);
 
 router.post('/articles', auth, articleCtrl.createArticle);
 
+router.get('/articles/:id', auth, articleCtrl.getArticle);
+
 router.put('/articles/:id', auth, articleCtrl.editArticle);
 
 router.delete('/articles/:id', auth, articleCtrl.deleteArticle);

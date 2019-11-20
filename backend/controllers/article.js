@@ -38,6 +38,52 @@ exports.createArticle = (req, res) => {
     );
 };
 
+exports.getArticle = async (req, res) => {
+
+  try {
+
+    const article = await db('articles')
+      .where('id', req.params.id)
+      .select('*');
+
+    if (article.length === 0) {
+      throw 'Article Not Found!';
+    }
+
+    const { id } = article[0];
+
+    const comments = await db('comments')
+      .where('postid', id)
+      .select('*');
+
+    const commentsArray = [];
+
+    comments.map((comment) => (
+      commentsArray.push({
+        commentId: comment.id,
+        comment: comment.description,
+        authorId: comment.authorid,
+      })
+    ));
+
+    return res.status(200).json({
+      status: 'success',
+      data: {
+        id: id,
+        createdOn: article[0].created_on,
+        title: article[0].title,
+        article: article[0].description,
+        comments: commentsArray,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: 'failed',
+      error: error,
+    });
+  }
+};
+
 exports.editArticle = (req, res) => {
   // Edit Article Object
   const article = new Article();
