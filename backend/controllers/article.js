@@ -1,5 +1,6 @@
 import db from '../database';
 import Article from '../models/article';
+import Comment from '../models/comment';
 
 
 exports.createArticle = (req, res) => {
@@ -100,6 +101,74 @@ exports.deleteArticle = (req, res) => {
           status: 'success',
           data: {
             message: 'Article successfully deleted',
+          },
+        });
+    })
+    .catch(
+      (err) => {
+        res.status(500)
+          .json({
+            status: 'error',
+            error: err,
+          });
+      },
+    );
+};
+
+exports.commentArticle = (req, res) => {
+
+  let articleTitle = '';
+  let article = '';
+
+  // Get Article from DB
+  db
+    .select('*')
+    .from('articles')
+    .where({ id: req.params.id })
+    .then((data) => {
+      if (data.length === 0) {
+        return res.status(404).json({
+          status: 'error',
+          error: 'Article Not Found!',
+        });
+      }
+
+      const { title, description } = data[0];
+      articleTitle = title;
+      article = description;
+
+    })
+    .catch(
+      (err) => {
+        res.status(500)
+          .json({
+            status: 'error',
+            error: err,
+          });
+      },
+    );
+
+  // Create Comment Object
+  const comment = new Comment();
+  comment.description = req.body.description;
+  comment.authorid = req.body.userId;
+  comment.articleid = req.params.id;
+
+  // Save Comment To DB
+  db('comments')
+    .returning('*')
+    .insert(comment)
+    .then((data) => {
+      const { description, created_on } = data[0];
+      res.status(201)
+        .json({
+          status: 'success',
+          data: {
+            message: 'Comment successfully created',
+            createdOn: created_on,
+            articleTitle: articleTitle,
+            article: article,
+            comment: description,
           },
         });
     })
