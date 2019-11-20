@@ -3,9 +3,10 @@ import auth from '../../middlewares/auth';
 
 const router = express.Router();
 
-const gifCtrl = require('../../controllers/gif');
 
-router.post('/gifs', auth, gifCtrl.createGif);
+const articleCtrl = require('../../controllers/article');
+
+router.post('/articles', auth, articleCtrl.createArticle);
 
 
 export default router;

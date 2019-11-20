@@ -23,7 +23,7 @@ exports.createGif = (req, res) => {
     console.log('* ', result.url);
 
     const gif = new Gif();
-    gif.ownerId = '';
+    gif.ownerId = req.body.userId;
     gif.title = result.original_filename;
     gif.comment = '';
     gif.authorName = '';
