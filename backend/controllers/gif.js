@@ -107,62 +107,49 @@ exports.deleteGif = (req, res) => {
 };
 
 
-exports.commentGif = (req, res) => {
-  let gifTitle = '';
+exports.commentGif = async (req, res) => {
 
-  // Get Gif from DB
-  db
-    .select('*')
-    .from('gifs')
-    .where({ id: req.params.id })
-    .then((data) => {
-      if (data.length === 0) {
-        return res.status(404).json({
-          status: 'error',
-          error: 'Gif Not Found!',
-        });
-      }
+  try {
+    // Get Gif from DB
+    const gif = await db
+      .select('*')
+      .from('gifs')
+      .where({ id: req.params.id });
 
-      const { title } = data[0];
-      gifTitle = title;
-    })
-    .catch(
-      (err) => {
-        res.status(500).json({
-          status: 'error',
-          error: err,
-        });
+    if (gif.length === 0) {
+      throw 'Gif Not Found!';
+    }
+    const { title } = gif;
+
+    // Create Comment Object
+    const comment = new Comment();
+    comment.description = req.body.description;
+    comment.authorid = req.body.userId;
+    comment.postid = req.params.id;
+
+    // Save Comment To DB
+    const comments = await db('comments')
+      .returning('*')
+      .insert(comment);
+
+    if (comments.length === 0) {
+      throw 'Error while Updating Comment!';
+    }
+    const { description, created_on } = comments[0];
+
+    res.status(201).json({
+      status: 'success',
+      data: {
+        message: 'Comment successfully created',
+        createdOn: created_on,
+        gifTitle: title,
+        comment: description,
       },
-    );
-
-  // Create Comment Object
-  const comment = new Comment();
-  comment.description = req.body.description;
-  comment.authorid = req.body.userId;
-  comment.postid = req.params.id;
-
-  // Save Comment To DB
-  db('comments')
-    .returning('*')
-    .insert(comment)
-    .then((data) => {
-      const { description, created_on } = data[0];
-      res.status(201).json({
-        status: 'success',
-        data: {
-          message: 'Comment successfully created',
-          createdOn: created_on,
-          gifTitle: gifTitle,
-          comment: description,
-        },
-      });
-    })
-    .catch(
-      (err) => {
-        res.status(500).json({
-          status: 'error',
-          error: err,
-        });
-      },
-    );
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'failed',
+      error: error,
+    });
+  }
 };

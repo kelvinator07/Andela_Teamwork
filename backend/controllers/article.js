@@ -18,24 +18,22 @@ exports.createArticle = (req, res) => {
     .insert(article)
     .then((data) => {
       const { id, title, created_on } = data[0];
-      res.status(201)
-        .json({
-          status: 'success',
-          data: {
-            message: 'Article successfully posted',
-            articleId: id,
-            createdOn: created_on,
-            title: title,
-          },
-        });
+      res.status(201).json({
+        status: 'success',
+        data: {
+          message: 'Article successfully posted',
+          articleId: id,
+          createdOn: created_on,
+          title: title,
+        },
+      });
     })
     .catch(
       (err) => {
-        res.status(500)
-          .json({
-            status: 'error',
-            error: err,
-          });
+        res.status(500).json({
+          status: 'error',
+          error: err,
+        });
       },
     );
 };
@@ -61,29 +59,26 @@ exports.editArticle = (req, res) => {
         });
       }
       const { title, description } = data[0];
-      res.status(200)
-        .json({
-          status: 'success',
-          data: {
-            message: 'Article successfully updated',
-            title: title,
-            article: description,
-          },
-        });
+      res.status(200).json({
+        status: 'success',
+        data: {
+          message: 'Article successfully updated',
+          title: title,
+          article: description,
+        },
+      });
     })
     .catch(
       (err) => {
-        res.status(500)
-          .json({
-            status: 'error',
-            error: err,
-          });
+        res.status(500).json({
+          status: 'error',
+          error: err,
+        });
       },
     );
 };
 
 exports.deleteArticle = (req, res) => {
-
   // Delete Article In DB
   db('articles')
     .where({ id: req.params.id })
@@ -96,89 +91,89 @@ exports.deleteArticle = (req, res) => {
         });
       }
 
-      res.status(200)
-        .json({
-          status: 'success',
-          data: {
-            message: 'Article successfully deleted',
-          },
-        });
+      res.status(200).json({
+        status: 'success',
+        data: {
+          message: 'Article successfully deleted',
+        },
+      });
     })
     .catch(
       (err) => {
-        res.status(500)
-          .json({
-            status: 'error',
-            error: err,
-          });
+        res.status(500).json({
+          status: 'error',
+          error: err,
+        });
       },
     );
 };
 
-exports.commentArticle = (req, res) => {
+exports.commentArticle = async (req, res) => {
 
-  let articleTitle = '';
-  let article = '';
+  try {
+    // Get Article from DB
+    const articles = await db('articles')
+      .where('id', req.params.id)
+      .select('*');
 
-  // Get Article from DB
-  db
+    if (articles.length === 0) {
+      throw 'Article Not Found!';
+    }
+    const { title } = articles[0];
+
+    // Create Comment Object
+    const comment = new Comment();
+    comment.description = req.body.description;
+    comment.authorid = req.body.userId;
+    comment.postid = req.params.id;
+
+    const comments = await db('comments')
+      .returning('*')
+      .insert(comment);
+
+    if (comments.length === 0) {
+      throw 'Error while Updating Comment!';
+    }
+    const { description, created_on } = comments[0];
+
+    return res.status(201).json({
+      status: 'success',
+      data: {
+        message: 'Comment successfully created',
+        createdOn: created_on,
+        articleTitle: title,
+        // article: article,
+        comment: description,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: 'failed',
+      error: error,
+    });
+  }
+};
+
+exports.getAllArticles = (req, res) => {
+
+  const { userId } = req.body;
+
+  db('articles')
+    .where('authorid', userId)
     .select('*')
-    .from('articles')
-    .where({ id: req.params.id })
     .then((data) => {
-      if (data.length === 0) {
-        return res.status(404).json({
-          status: 'error',
-          error: 'Article Not Found!',
-        });
-      }
 
-      const { title, description } = data[0];
-      articleTitle = title;
-      article = description;
-
+      res.status(200).json({
+        status: 'success',
+        data: {
+          message: data,
+        },
+      });
     })
-    .catch(
-      (err) => {
-        res.status(500)
-          .json({
-            status: 'error',
-            error: err,
-          });
-      },
-    );
-
-  // Create Comment Object
-  const comment = new Comment();
-  comment.description = req.body.description;
-  comment.authorid = req.body.userId;
-  comment.articleid = req.params.id;
-
-  // Save Comment To DB
-  db('comments')
-    .returning('*')
-    .insert(comment)
-    .then((data) => {
-      const { description, created_on } = data[0];
-      res.status(201)
-        .json({
-          status: 'success',
-          data: {
-            message: 'Comment successfully created',
-            createdOn: created_on,
-            articleTitle: articleTitle,
-            article: article,
-            comment: description,
-          },
-        });
-    })
-    .catch(
-      (err) => {
-        res.status(500)
-          .json({
-            status: 'error',
-            error: err,
-          });
-      },
-    );
+    .catch((error) => {
+      res.status(500).json({
+        status: '',
+        error: error,
+      });
+    });
 };
