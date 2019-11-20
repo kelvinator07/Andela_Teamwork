@@ -3,7 +3,6 @@ export default class Gif {
     this.id = id;
     this.ownerId = ownerId;
     this.title = title;
-    this.comment = comment;
     this.authorName = authorName;
     this.imageUrl = imageUrl;
   }
