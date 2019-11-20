@@ -112,14 +112,14 @@ exports.commentArticle = async (req, res) => {
 
   try {
     // Get Article from DB
-    const articlefromdb = await db('articles')
+    const articles = await db('articles')
       .where('id', req.params.id)
       .select('*');
 
-    if (articlefromdb.length === 0) {
+    if (articles.length === 0) {
       throw 'Article Not Found!';
     }
-    const { title } = articlefromdb[0];
+    const { title } = articles[0];
 
     // Create Comment Object
     const comment = new Comment();
@@ -127,14 +127,14 @@ exports.commentArticle = async (req, res) => {
     comment.authorid = req.body.userId;
     comment.postid = req.params.id;
 
-    const commentfromdb = await db('comments')
+    const comments = await db('comments')
       .returning('*')
       .insert(comment);
 
-    if (commentfromdb.length === 0) {
+    if (comments.length === 0) {
       throw 'Error while Updating Comment!';
     }
-    const { description, created_on } = commentfromdb[0];
+    const { description, created_on } = comments[0];
 
     return res.status(201).json({
       status: 'success',
