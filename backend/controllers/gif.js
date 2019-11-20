@@ -3,6 +3,7 @@ import fs from 'fs';
 import db from '../database';
 import cloudinary from '../config/cloudinaryConfig';
 import Gif from '../models/gif';
+import Comment from '../models/comment';
 
 
 exports.createGif = (req, res) => {
@@ -25,7 +26,6 @@ exports.createGif = (req, res) => {
     const gif = new Gif();
     gif.ownerId = req.body.userId;
     gif.title = result.original_filename;
-    gif.comment = '';
     gif.authorName = '';
     gif.imageUrl = result.url;
 
@@ -91,7 +91,7 @@ exports.deleteGif = (req, res) => {
         .json({
           status: 'success',
           data: {
-            message: 'Gif successfully deleted',
+            message: 'Gif post successfully deleted',
           },
         });
     })
@@ -102,6 +102,67 @@ exports.deleteGif = (req, res) => {
             status: 'error',
             error: err,
           });
+      },
+    );
+};
+
+
+exports.commentGif = (req, res) => {
+  let gifTitle = '';
+
+  // Get Gif from DB
+  db
+    .select('*')
+    .from('gifs')
+    .where({ id: req.params.id })
+    .then((data) => {
+      if (data.length === 0) {
+        return res.status(404).json({
+          status: 'error',
+          error: 'Gif Not Found!',
+        });
+      }
+
+      const { title } = data[0];
+      gifTitle = title;
+    })
+    .catch(
+      (err) => {
+        res.status(500).json({
+          status: 'error',
+          error: err,
+        });
+      },
+    );
+
+  // Create Comment Object
+  const comment = new Comment();
+  comment.description = req.body.description;
+  comment.authorid = req.body.userId;
+  comment.postid = req.params.id;
+
+  // Save Comment To DB
+  db('comments')
+    .returning('*')
+    .insert(comment)
+    .then((data) => {
+      const { description, created_on } = data[0];
+      res.status(201).json({
+        status: 'success',
+        data: {
+          message: 'Comment successfully created',
+          createdOn: created_on,
+          gifTitle: gifTitle,
+          comment: description,
+        },
+      });
+    })
+    .catch(
+      (err) => {
+        res.status(500).json({
+          status: 'error',
+          error: err,
+        });
       },
     );
 };
