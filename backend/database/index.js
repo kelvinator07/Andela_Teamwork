@@ -1,5 +1,4 @@
 import knex from 'knex';
-// import userRoutes from './routes/api/user';
 
 
 const postgres = knex({
@@ -11,9 +10,5 @@ const postgres = knex({
     database: 'teamwork',
   },
 });
-
-// postgres.select('*').from('users').then((data) => {
-//   console.log(data);
-// });
 
 export default postgres;

@@ -1,8 +1,7 @@
 import express from 'express';
+import userCtrl from '../../controllers/user';
 
 const router = express.Router();
-
-const userCtrl = require('../../controllers/user');
 
 
 router.post('/create-user', userCtrl.signup);

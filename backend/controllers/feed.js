@@ -2,7 +2,9 @@ import db from '../database';
 
 
 exports.getAllFeed = async (req, res) => {
+
   try {
+
     const { userId } = req.body;
 
     const articles = await db('articles')
@@ -20,16 +22,14 @@ exports.getAllFeed = async (req, res) => {
     const sorted = feeds.sort((a, b) =>
       new Date(b.created_on).getTime() - new Date(a.created_on).getTime());
 
-    res.status(200)
+    return res.status(200)
       .json({
         status: 'success',
-        data: {
-          message: sorted,
-        },
+        data: sorted,
       });
   } catch (error) {
-    res.status(500).json({
-      status: '',
+    return res.status(500).json({
+      status: 'failed',
       error: error,
     });
   }

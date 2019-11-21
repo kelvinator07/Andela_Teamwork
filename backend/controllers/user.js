@@ -23,25 +23,23 @@ exports.signup = (req, res) => {
       user.address = req.body.address;
       user.userrole = req.body.userrole;
 
-      // db.insert(user).returning('*').into('users').then((data) => {
-      //   res.send(data);
-      // });
-      // Returns [1]
+      // Insert User Into DB
       db('users')
         .returning('*')
         .insert(user).then((data) => {
-          res.status(201).json({
+          const { id } = data[0];
+          return res.status(201).json({
             status: 'success',
             data: {
-              message: `User account successfully created  with id: ${data[0].id}`,
+              message: `User account successfully created  with id: ${id}`,
               token: '',
-              userId: data[0].id,
+              userId: id,
             },
           });
         })
         .catch(
           (error) => {
-            res.status(500).json({
+            return res.status(500).json({
               status: 'error',
               error: error.detail,
             });
@@ -50,7 +48,7 @@ exports.signup = (req, res) => {
     },
   ).catch(
     (error) => {
-      res.status(500).json({
+      return res.status(500).json({
         status: 'error',
         error: error.detail,
       });
@@ -60,18 +58,21 @@ exports.signup = (req, res) => {
 
 exports.signin = (req, res) => {
 
-  db('users').where({
-    email: req.body.email,
-  }).select('*').then(
-    (user) => {
+  db('users')
+    .where({ email: req.body.email })
+    .select('*')
+    .then((user) => {
       if (user.length === 0) {
-        return res.status(401).json({
+        return res.status(404).json({
           status: 'error',
           error: 'User Not Found!',
         });
       }
+
+      const { id, password } = user[0];
+
       // compare password If user is found
-      bcrypt.compare(req.body.password, user[0].password).then(
+      bcrypt.compare(req.body.password, password).then(
         (valid) => {
           if (!valid) {
             return res.status(401).json({
@@ -81,31 +82,31 @@ exports.signin = (req, res) => {
           }
 
           const token = jwt.sign(
-            { userId: user[0].id },
+            { userId: id },
             'RANDOM_SECRET_TOKEN',
             { expiresIn: '24h' });
 
-          res.status(200).json({
+          return res.status(200).json({
             status: 'success',
             data: {
               token: token,
-              userId: user[0].id,
+              userId: id,
             },
           });
         },
       ).catch(
         (error) => {
-          res.status(500).json({
+          return res.status(500).json({
             status: 'error',
             error: error.detail,
           });
         },
       );
     },
-  )
+    )
     .catch(
       (error) => {
-        res.status(500).json({
+        return res.status(500).json({
           status: 'error',
           error: error.detail,
         });
