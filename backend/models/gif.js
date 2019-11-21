@@ -1,9 +1,9 @@
 export default class Gif {
-  constructor(id, ownerId, title, comment, authorName, imageUrl) {
+  constructor(id, authorid, title, imageurl, share) {
     this.id = id;
-    this.ownerId = ownerId;
+    this.authorid = authorid;
     this.title = title;
-    this.authorName = authorName;
-    this.imageUrl = imageUrl;
+    this.imageurl = imageurl;
+    this.share = share;
   }
 }
