@@ -1,4 +1,3 @@
-import jwt from 'jsonwebtoken';
 import fs from 'fs';
 import db from '../database';
 import cloudinary from '../config/cloudinaryConfig';
@@ -9,6 +8,8 @@ import Comment from '../models/comment';
 exports.createGif = (req, res) => {
 
   console.log('** ** ** ** ** ** ** ** ** Uploads ** ** ** ** ** ** ** ** ** **');
+
+  // let filename = req.files.dataFile.path;
 
   const { file } = req;
   // File Upload
@@ -24,17 +25,17 @@ exports.createGif = (req, res) => {
     console.log('* ', result.url);
 
     const gif = new Gif();
-    gif.ownerId = req.body.userId;
+    gif.authorid = req.body.userId;
     gif.title = result.original_filename;
-    gif.authorName = '';
     gif.imageUrl = result.url;
+    gif.share = true;
 
     // Save Image To DB
     db('gifs')
       .returning('*')
       .insert(gif).then((data) => {
         console.log(data);
-        res.status(201).json({
+        return res.status(201).json({
           status: 'success',
           data: {
             gifId: result.public_id,
@@ -47,31 +48,60 @@ exports.createGif = (req, res) => {
       })
       .catch(
         (err) => {
-          res.status(500).json({
+          return res.status(500).json({
             status: 'error',
             error: err.detail,
           });
         },
       );
   });
-
-  // let filename = req.files.dataFile.path;
-  // cloudinary.uploader.upload(filename, {
-  //   tags: 'gotemps',
-  //   resource_type: 'auto',
-  // })
-  //   .then(function (file) {
-  //     console.log('Public id of the file is  ' + file.public_id);
-  //     console.log('Url of the file is  ' + file.url);
-  //     template.dataFile = file.url;
-  //   })
-  //   .catch(function (err) {
-  //     if (err) {
-  //       console.warn(err);
-  //     }
-  //   });
 };
 
+exports.getGif = async (req, res) => {
+
+  try {
+
+    const gif = await db('gifs')
+      .where('id', req.params.id)
+      .select('*');
+
+    if (gif.length === 0) {
+      throw 'Gif Not Found!';
+    }
+
+    const { id } = gif[0];
+
+    const comments = await db('comments')
+      .where('postid', id)
+      .select('*');
+
+    const commentsArray = [];
+
+    comments.map((comment) => (
+      commentsArray.push({
+        commentId: comment.id,
+        comment: comment.description,
+        authorId: comment.authorid,
+      })
+    ));
+
+    return res.status(200).json({
+      status: 'success',
+      data: {
+        id: id,
+        createdOn: gif[0].created_on,
+        title: gif[0].title,
+        url: gif[0].image_url,
+        comments: commentsArray,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: 'failed',
+      error: error,
+    });
+  }
+};
 
 exports.deleteGif = (req, res) => {
 
@@ -87,7 +117,7 @@ exports.deleteGif = (req, res) => {
         });
       }
 
-      res.status(200)
+      return res.status(200)
         .json({
           status: 'success',
           data: {
@@ -97,7 +127,7 @@ exports.deleteGif = (req, res) => {
     })
     .catch(
       (err) => {
-        res.status(500)
+        return res.status(500)
           .json({
             status: 'error',
             error: err,
@@ -137,7 +167,7 @@ exports.commentGif = async (req, res) => {
     }
     const { description, created_on } = comments[0];
 
-    res.status(201).json({
+    return res.status(201).json({
       status: 'success',
       data: {
         message: 'Comment successfully created',
@@ -147,7 +177,7 @@ exports.commentGif = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       status: 'failed',
       error: error,
     });
