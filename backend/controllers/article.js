@@ -18,7 +18,7 @@ exports.createArticle = (req, res) => {
     .insert(article)
     .then((data) => {
       const { id, title, created_on } = data[0];
-      res.status(201).json({
+      return res.status(201).json({
         status: 'success',
         data: {
           message: 'Article successfully posted',
@@ -30,7 +30,7 @@ exports.createArticle = (req, res) => {
     })
     .catch(
       (err) => {
-        res.status(500).json({
+        return res.status(500).json({
           status: 'error',
           error: err,
         });
@@ -105,7 +105,7 @@ exports.editArticle = (req, res) => {
         });
       }
       const { title, description } = data[0];
-      res.status(200).json({
+      return res.status(200).json({
         status: 'success',
         data: {
           message: 'Article successfully updated',
@@ -116,7 +116,7 @@ exports.editArticle = (req, res) => {
     })
     .catch(
       (err) => {
-        res.status(500).json({
+        return res.status(500).json({
           status: 'error',
           error: err,
         });
@@ -137,7 +137,7 @@ exports.deleteArticle = (req, res) => {
         });
       }
 
-      res.status(200).json({
+      return res.status(200).json({
         status: 'success',
         data: {
           message: 'Article successfully deleted',
@@ -146,7 +146,7 @@ exports.deleteArticle = (req, res) => {
     })
     .catch(
       (err) => {
-        res.status(500).json({
+        return res.status(500).json({
           status: 'error',
           error: err,
         });
@@ -209,7 +209,7 @@ exports.getAllArticles = (req, res) => {
     .select('*')
     .then((data) => {
 
-      res.status(200).json({
+      return res.status(200).json({
         status: 'success',
         data: {
           message: data,
@@ -217,7 +217,7 @@ exports.getAllArticles = (req, res) => {
       });
     })
     .catch((error) => {
-      res.status(500).json({
+      return res.status(500).json({
         status: '',
         error: error,
       });
