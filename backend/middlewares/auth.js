@@ -1,7 +1,6 @@
 import jwt from 'jsonwebtoken';
 
 module.exports = (req, res, next) => {
-  console.log('req ', req.headers);
 
   try {
     const token = req.headers.authorization.split(' ')[1];
@@ -9,7 +8,7 @@ module.exports = (req, res, next) => {
     const userId = decodedToken.userId;
 
     if (req.body.userId && req.body.userId !== userId) {
-      throw new Error('Invalid User ID');
+      throw 'Invalid User ID';
     } else {
       req.body.userId = userId;
       next();
