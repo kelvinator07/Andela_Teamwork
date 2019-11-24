@@ -4,56 +4,65 @@ import db from '../database';
 import User from '../models/user';
 
 
-exports.signup = (req, res) => {
+exports.signup = async (req, res) => {
 
-  const saltRounds = 10;
+  try {
 
-  bcrypt.hash(req.body.password, saltRounds).then(
-    (hashPassword) => {
+    // Check If Email Exists from DB
+    const emails = await db.select('email')
+      .from('users');
 
-      const user = new User();
-      user.firstname = req.body.firstname;
-      user.lastname = req.body.lastname;
-      user.email = req.body.email;
-      user.password = hashPassword;
-      user.gender = req.body.gender;
-      user.jobrole = req.body.jobrole;
-      user.department = req.body.department;
-      user.department = req.body.department;
-      user.address = req.body.address;
-      user.userrole = req.body.userrole;
+    for (let i = 0; i < emails.length; i++) {
+      if (emails[i].email === req.body.email) {
+        throw 'Email Already Exist!';
+      }
+    }
 
-      // Insert User Into DB
-      db('users')
-        .returning('*')
-        .insert(user).then((data) => {
-          const { id } = data[0];
-          return res.status(201).json({
-            status: 'success',
-            data: {
-              message: `User account successfully created  with id: ${id}`,
-              token: '',
-              userId: id,
-            },
-          });
-        })
-        .catch(
-          (error) => {
-            return res.status(500).json({
-              status: 'error',
-              error: error.detail,
-            });
-          },
-        );
-    },
-  ).catch(
-    (error) => {
+    const saltRounds = 10;
+
+    const hashPassword = bcrypt.hashSync(req.body.password, saltRounds);
+
+    const user = new User();
+    user.firstname = req.body.firstname;
+    user.lastname = req.body.lastname;
+    user.email = req.body.email;
+    user.password = hashPassword;
+    user.gender = req.body.gender;
+    user.jobrole = req.body.jobrole;
+    user.department = req.body.department;
+    user.department = req.body.department;
+    user.address = req.body.address;
+    user.avatarurl = req.body.avatarurl;
+    user.userrole = req.body.userrole;
+
+    // Insert User Into DB
+    const userReturned = await db('users')
+      .returning('*')
+      .insert(user);
+
+    const { id } = userReturned[0];
+
+    if (userReturned.length === 0) {
       return res.status(500).json({
         status: 'error',
-        error: error.detail,
+        error: 'Internal Server Error!',
       });
-    },
-  );
+    }
+
+    return res.status(201).json({
+      status: 'success',
+      data: {
+        message: `User account successfully created with id: ${id}`,
+        token: '',
+        userId: id,
+      },
+    });
+  } catch (error) {
+    res.status(401).json({
+      status: 'error',
+      error: error,
+    });
+  }
 };
 
 exports.signin = (req, res) => {
