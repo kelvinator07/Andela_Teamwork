@@ -1,0 +1,11 @@
+node_modules
+build/
+npm-debug.log
+.idea/
+classes/
+out/
+.vscode/**
+.nyc_output/
+coverage
+backend/database/
+docs/
