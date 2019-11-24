@@ -96,6 +96,7 @@ exports.editArticle = (req, res) => {
   // Update Article In DB
   db('articles')
     .where({ id: req.params.id })
+    .andWhere('authorid', req.body.userId)
     .update(article, ['title', 'description'])
     .then((data) => {
       if (data.length === 0) {
@@ -124,7 +125,7 @@ exports.editArticle = (req, res) => {
     );
 };
 
-exports.deleteArticle = (req, res) => {
+exports.deleteArticle = async (req, res) => {
   // Delete Article In DB
   db('articles')
     .where({ id: req.params.id })
