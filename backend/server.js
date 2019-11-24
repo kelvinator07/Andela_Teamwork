@@ -43,6 +43,13 @@ app.on('listening', () => {
   console.log(`Teamwork Listening on ${bind}`);
 });
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Teamwork listening on port ${port}!`);
 });
+
+
+exports.closeServer = () => {
+  server.close();
+};
+
+module.exports = server;
