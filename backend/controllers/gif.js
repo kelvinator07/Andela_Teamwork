@@ -108,6 +108,7 @@ exports.deleteGif = (req, res) => {
   // Delete Article In DB
   db('gifs')
     .where({ id: req.params.id })
+    .andWhere('authorid', req.body.userId)
     .del()
     .then((data) => {
       if (data === 0) {
