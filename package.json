@@ -5,8 +5,10 @@
   "main": "server.js",
   "scripts": {
     "test": "nyc --reporter=html --reporter=text mocha --require @babel/register --recursive backend/tests --exit || true",
-    "clean": "rm -rf build && mkdir build",
-    "start": "npm run build && node --exec babel-node ./backend/server.js",
+    "clean": "rmdir /q /s dist && mkdir dist",
+    "build-babel": "babel backend --out-dir dist",
+    "build": "npm run clean && npm run build-babel",
+    "start": "npm run build && node dist/server.js",
     "start:dev": "nodemon --exec babel-node ./backend/server.js",
     "coverage": "nyc report --reporter=text-lcov --reporter=lcov"
   },
