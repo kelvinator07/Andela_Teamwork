@@ -8,7 +8,7 @@
     "clean": "rm -rf dist && mkdir dist",
     "build-babel": "babel -d ./dist ./backend -s",
     "build": "npm run clean && npm run build-babel",
-    "start": "npm run build-babel && node dist/server.js",
+    "start": "node dist/server.js",
     "start:dev": "nodemon --exec babel-node ./backend/server.js",
     "coverage": "nyc report --reporter=text-lcov --reporter=lcov"
   },
