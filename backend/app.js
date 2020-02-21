@@ -1,9 +1,9 @@
 import express from 'express';
 import swaggerUi from 'swagger-ui-express';
 import bodyParser from 'body-parser';
+require('babel-polyfill');
 
 import swaggerDocument from '../docs';
-
 
 import feedRoutes from './routes/api/feed';
 import articleRoutes from './routes/api/article';
