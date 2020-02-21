@@ -14,9 +14,10 @@ module.exports = (req, res, next) => {
       next();
     }
 
-  } catch {
+  } catch (error) {
     res.status(401).json({
-      error: 'Invalid Request!',
+      status: 'Invalid Request!',
+      error: error || error.message,
     });
   }
 };

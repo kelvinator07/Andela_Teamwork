@@ -1,10 +1,11 @@
 import cloudinary from 'cloudinary';
+require('dotenv').config();
 
 // Setting env variable CLOUDINARY_URL
 cloudinary.config({
-  cloud_name: 'kelvinator',
-  api_key: '598598888424893',
-  api_secret: '_QvFaZal3h-Zy-8Vn6ikUUO2kIo',
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.API_KEY,
+  api_secret: process.env.API_SECRET,
 });
 
 export default cloudinary;
