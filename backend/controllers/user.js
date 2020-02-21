@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import models from '../database/models';
+require('dotenv').config();
 
 exports.signup = async (req, res) => {
 
@@ -74,7 +75,7 @@ exports.signin = async (req, res) => {
 
         const token = jwt.sign(
             {userId: id},
-            'RANDOM_SECRET_TOKEN',
+            process.env.JWT_SECRET_TOKEN,
             {expiresIn: '24h'});
 
         return res.status(200).json({

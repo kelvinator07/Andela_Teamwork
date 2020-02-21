@@ -5,8 +5,8 @@
   "main": "server.js",
   "scripts": {
     "test": "nyc --reporter=html --reporter=text mocha --require @babel/register --recursive backend/tests --exit || true",
-    "clean": "rmdir /q /s dist && mkdir dist",
-    "build-babel": "babel backend --out-dir dist",
+    "clean": "rm -rf dist && mkdir dist",
+    "build-babel": "babel -d ./dist ./backend -s",
     "build": "npm run clean && npm run build-babel",
     "start": "npm run build-babel && node dist/server.js",
     "start:dev": "nodemon --exec babel-node ./backend/server.js",
