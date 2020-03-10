@@ -1,5 +1,5 @@
 import app from './app';
-require('babel-polyfill');
+import 'babel-polyfill';
 
 const normalizePort = (val) => {
   const port = parseInt(val, 10);

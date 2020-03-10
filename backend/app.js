@@ -1,7 +1,7 @@
 import express from 'express';
 import swaggerUi from 'swagger-ui-express';
 import bodyParser from 'body-parser';
-require('babel-polyfill');
+import 'babel-polyfill';
 
 import swaggerDocument from '../docs';
 
