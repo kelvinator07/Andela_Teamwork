@@ -1,5 +1,5 @@
 import cloudinary from 'cloudinary';
-require('dotenv').config();
+import 'dotenv/config';
 
 // Setting env variable CLOUDINARY_URL
 cloudinary.config({
