@@ -116,9 +116,10 @@ exports.signin = async (req, res) => {
         return res.status(status.bad).send(errorMessage);
     }
     const signinUserQuery = 'SELECT * FROM users WHERE email = $1';
-    return res.status(200).json({ message: `Teamwork App! on Port ${process.env.PORT}` });
+
     try {
         const { rows } = await dbQuery.query(signinUserQuery, [email]);
+        return res.status(200).json({ message: `Teamwork App! on Port ${process.env.PORT}` });
         const dbResponse = rows[0];
         if (!dbResponse) {
             errorMessage.error = 'User with this email does not exist';
