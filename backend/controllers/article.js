@@ -1,6 +1,4 @@
 import models from '../database/models';
-import Article from '../models/article';
-import Comment from '../models/comment';
 
 exports.createArticle = async (req, res) => {
 

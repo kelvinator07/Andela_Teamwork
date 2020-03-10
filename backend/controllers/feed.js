@@ -1,5 +1,5 @@
 import models from "../database/models";
-require('babel-polyfill');
+import 'babel-polyfill';
 
 exports.getAllFeed = async (req, res) => {
 
