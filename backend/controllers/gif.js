@@ -1,5 +1,9 @@
 import cloudinary from '../config/cloudinaryConfig';
 import models from "../database/models";
+import moment from "moment";
+import {isEmpty} from "../helpers/validation";
+import {errorMessage, status} from "../helpers/status";
+import dbQuery from "../db/dev/dbQuery";
 
 
 exports.createGif = async (req, res) => {
@@ -26,25 +30,43 @@ exports.createGif = async (req, res) => {
         console.log('* url ', result.url);
       });
 
-      const gif = await models.Gif.create({
-        authorId: req.body.userId,
-        title: result.original_filename,
-        imageurl: result.url,
-        share: 'Yes'
-      });
 
-      if (gif === null) {
-        throw 'Something went wrong while saving Gif. Please try again.';
+      //   const gif = await models.Gif.create({
+      //   authorId: req.body.userId,
+      //   title: result.original_filename,
+      //   imageurl: result.url,
+      //   share: 'Yes'
+      // });
+      //
+      // if (gif === null) {
+      //   throw 'Something went wrong while saving Gif. Please try again.';
+      // }
+
+      const { title, share } = req.body;
+
+      const authorid = req.body.userId;
+
+      const createdAt = moment(new Date());
+      const updatedAt = moment(new Date());
+
+      if (isEmpty(title) || isEmpty(share)) {
+        errorMessage.error = 'title and share field cannot be empty';
+        return res.status(status.bad).send(errorMessage);
       }
 
-      const {id, title, imageurl, createdAt} = gif;
+      const createGifQuery = `INSERT INTO gifs(title, share, authorId, imageurl, updatedAt, createdAt)
+      VALUES($1, $2, $3, $4, $5, $6) returning *`;
+      const values = [ title, share, authorid, result.url, updatedAt, createdAt ];
 
-      return res.status(201).json({
+      const { rows } = await dbQuery.query(createGifQuery, values);
+      const dbResponse = rows[0];
+      const { id, imageurl, createdat } = dbResponse;
+      return res.status(status.created).json({
         status: 'success',
         data: {
           gifId: id,
           message: 'GIF image successfully posted',
-          createdAt,
+          createdOn: createdat,
           title,
           imageurl,
         },
@@ -60,35 +82,48 @@ exports.createGif = async (req, res) => {
 
 exports.getGif = async (req, res) => {
 
+  const getGifQuery = 'SELECT * FROM gifs WHERE id = $1';
+  let dataResponse = {};
+
   try {
 
-    const gifId = req.params.id;
+    const { rows } = await dbQuery.query(getGifQuery, [req.params.id]);
+    const dbResponse = rows[0];
 
-    const gif = await models.Gif.findOne({
-      where: { id: gifId }
-    });
-
-    if (gif === null) {
-      throw 'Gif Not Found!';
+    if (!dbResponse) {
+      errorMessage.error = 'Gif Not Found!';
+      return res.status(status.notfound).send(errorMessage);
     }
 
-    const {id, title, imageurl, share, createdAt} = gif;
+    dataResponse = dbResponse;
 
-    const comments = await models.Comment.findAll({
-      where: { postId: id }
-    });
+  } catch (error) {
+    errorMessage.error = 'An error Occurred';
+    return res.status(status.error).send(errorMessage);
+  }
+
+  const getGifCommentsQuery = 'SELECT * FROM comments WHERE postid = $1';
+
+  try {
+
+    const {id, title, imageurl, share, createdat} = dataResponse;
+
+    const { rows } = await dbQuery.query(getGifCommentsQuery, [id]);
+    const dbResponse = rows;
 
     const commentsArray = [];
 
-    comments.map((comment) => (
-        commentsArray.push({
-          commentId: comment.id,
-          comment: comment.description,
-          authorId: comment.authorid,
-        })
-    ));
+    if (dbResponse[0] !== undefined) {
+      dbResponse.map((comment) => (
+          commentsArray.push({
+            commentId: comment.id,
+            comment: comment.description,
+            authorId: comment.authorid,
+          })
+      ));
+    }
 
-    return res.status(200).json({
+    return res.status(status.success).json({
       status: 'success',
       data: {
         id: id,
@@ -96,98 +131,215 @@ exports.getGif = async (req, res) => {
         url: imageurl,
         share: share,
         comments: commentsArray,
-        createdOn: createdAt,
+        createdOn: createdat,
       },
     });
 
   } catch (error) {
-    return res.status(500).json({
-      status: 'failed',
-      error: error || error.message,
-    });
+    errorMessage.error = 'An error Occurred';
+    return res.status(status.error).send(errorMessage);
   }
+
+  // try {
+  //
+  //   const gifId = req.params.id;
+  //
+  //   const gif = await models.Gif.findOne({
+  //     where: { id: gifId }
+  //   });
+  //
+  //   if (gif === null) {
+  //     throw 'Gif Not Found!';
+  //   }
+  //
+  //   const {id, title, imageurl, share, createdAt} = gif;
+  //
+  //   const comments = await models.Comment.findAll({
+  //     where: { postId: id }
+  //   });
+  //
+  //   const commentsArray = [];
+  //
+  //   comments.map((comment) => (
+  //       commentsArray.push({
+  //         commentId: comment.id,
+  //         comment: comment.description,
+  //         authorId: comment.authorid,
+  //       })
+  //   ));
+  //
+  //   return res.status(200).json({
+  //     status: 'success',
+  //     data: {
+  //       id: id,
+  //       title: title,
+  //       url: imageurl,
+  //       share: share,
+  //       comments: commentsArray,
+  //       createdOn: createdAt,
+  //     },
+  //   });
+  //
+  // } catch (error) {
+  //   return res.status(500).json({
+  //     status: 'failed',
+  //     error: error || error.message,
+  //   });
+  // }
 };
 
 exports.deleteGif = async (req, res) => {
 
+  const postId = req.params.id;
+  const authorid = req.body.userId;
+  const deleteGifQuery = 'DELETE FROM gifs WHERE id=$1 AND authorid = $2 returning *';
+
   try {
-
-    const postId = req.params.id;
-
-    const findGif = await models.Gif.findOne({
-      where: { id: postId, authorId: req.body.userId }
-    });
-
-    if (findGif === null) {
-      throw 'Gif Not Found';
+    const { rows } = await dbQuery.query(deleteGifQuery, [postId, authorid]);
+    const dbResponse = rows[0];
+    if (!dbResponse) {
+      errorMessage.error = 'Gif Not Found';
+      return res.status(status.notfound).send(errorMessage);
     }
-
-    // Delete Gif In DB
-    const deletedGif = await models.Gif.destroy({
-      where: { id: postId }
-    });
-
-    if (deletedGif !== 1) {
-      throw 'Error deleting Gif. Please Try Again';
-    }
-
-    return res.status(200).json({
+    return res.status(status.success).json({
       status: 'success',
       data: {
         message: 'Gif post successfully deleted',
       },
     });
-
   } catch (error) {
-    return res.status(500).json({
-      status: 'error',
-      error: error || error.message,
-    });
+    return res.status(status.error).send(error);
   }
+
+  // try {
+  //
+  //   const postId = req.params.id;
+  //
+  //   const findGif = await models.Gif.findOne({
+  //     where: { id: postId, authorId: req.body.userId }
+  //   });
+  //
+  //   if (findGif === null) {
+  //     throw 'Gif Not Found';
+  //   }
+  //
+  //   // Delete Gif In DB
+  //   const deletedGif = await models.Gif.destroy({
+  //     where: { id: postId }
+  //   });
+  //
+  //   if (deletedGif !== 1) {
+  //     throw 'Error deleting Gif. Please Try Again';
+  //   }
+  //
+  //   return res.status(200).json({
+  //     status: 'success',
+  //     data: {
+  //       message: 'Gif post successfully deleted',
+  //     },
+  //   });
+  //
+  // } catch (error) {
+  //   return res.status(500).json({
+  //     status: 'error',
+  //     error: error || error.message,
+  //   });
+  // }
 };
 
 
 exports.commentGif = async (req, res) => {
 
+  const postId = req.params.id;
+  const { description, userId } = req.body;
+  const authorId = userId;
+
+  const findGifQuery = 'SELECT * FROM gifs WHERE id=$1';
+  const commentGif = `INSERT INTO comments(description, authorid, postid, updatedAt, createdAt)
+      VALUES($1, $2, $3, $4, $5) returning *`;
+  const createdAt = moment(new Date());
+  const updatedAt = moment(new Date());
+  const values = [description, authorId, postId, updatedAt, createdAt];
+  let title;
   try {
-    // Get Gif from DB
-    const gifId = req.params.id;
+    const { rows } = await dbQuery.query(findGifQuery, [postId]);
+    const dbResponse = rows[0];
+    if (!dbResponse) {
+      errorMessage.error = 'Gif Cannot be found';
+      return res.status(status.notfound).send(errorMessage);
+    }
+    title  = dbResponse.title;
+  } catch (error) {
+    errorMessage.error = 'Operation was not successful';
+    return res.status(status.error).send(errorMessage);
+  }
 
-    const gif = await models.Gif.findOne({
-      where: { id: gifId }
-    });
-
-    if (gif === null) {
-      throw 'Gif Not Found!';
+  try {
+    const { rows } = await dbQuery.query(commentGif, values);
+    const dbResponse = rows[0];
+    if (!dbResponse) {
+      errorMessage.error = 'Error while adding Comment!';
+      return res.status(status.conflict).send(errorMessage);
     }
 
-    const { title } = gif;
+    const { createdat } = dbResponse;
 
-    const { description, userId } = req.body;
-
-    const comment = await models.Comment.create({description, authorId: userId, gifId});
-
-    if (comment === null) {
-      throw 'Error while adding Comment!';
-    }
-
-    const { createdAt } = comment;
-
-    return res.status(201).json({
+    return res.status(status.created).json({
       status: 'success',
       data: {
         message: 'Comment successfully created',
-        createdOn: createdAt,
-        articleTitle: title,
+        createdOn: createdat,
+        gifTitle: title,
         // article: article,
         comment: description,
       },
     });
 
   } catch (error) {
-    return res.status(500).json({
-      status: 'failed',
-      error: error || error.message,
-    });
+    errorMessage.error = 'Operation was not successful';
+    return res.status(status.error).send(errorMessage);
   }
+
+
+  // try {
+  //   // Get Gif from DB
+  //   const gifId = req.params.id;
+  //
+  //   const gif = await models.Gif.findOne({
+  //     where: { id: gifId }
+  //   });
+  //
+  //   if (gif === null) {
+  //     throw 'Gif Not Found!';
+  //   }
+  //
+  //   const { title } = gif;
+  //
+  //   const { description, userId } = req.body;
+  //
+  //   const comment = await models.Comment.create({description, authorId: userId, gifId});
+  //
+  //   if (comment === null) {
+  //     throw 'Error while adding Comment!';
+  //   }
+  //
+  //   const { createdAt } = comment;
+  //
+  //   return res.status(201).json({
+  //     status: 'success',
+  //     data: {
+  //       message: 'Comment successfully created',
+  //       createdOn: createdAt,
+  //       articleTitle: title,
+  //       // article: article,
+  //       comment: description,
+  //     },
+  //   });
+  //
+  // } catch (error) {
+  //   return res.status(500).json({
+  //     status: 'failed',
+  //     error: error || error.message,
+  //   });
+  // }
 };

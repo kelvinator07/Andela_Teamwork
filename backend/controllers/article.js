@@ -1,9 +1,7 @@
-import models from '../database/models';
 import moment from 'moment';
 import dbQuery from '../db/dev/dbQuery';
-import { isValidEmail, validatePassword, isEmpty } from '../helpers/validation';
-import { errorMessage, successMessage, status } from '../helpers/status';
-import jwt from "jsonwebtoken";
+import { isEmpty } from '../helpers/validation';
+import { errorMessage, status } from '../helpers/status';
 
 exports.createArticle = async (req, res) => {
 
@@ -46,8 +44,6 @@ exports.createArticle = async (req, res) => {
         errorMessage.error = 'Operation was not successful';
         return res.status(status.error).send(errorMessage);
     }
-
-
 
     // // using sequelize
     // try {
