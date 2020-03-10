@@ -8,12 +8,11 @@ export default {
      * @returns {object} object
      */
     query(quertText, params) {
-        pool.query(quertText, params)
-            .then((res) => {
-                return res;
-            })
-            .catch((err) => {
-                return err;
-            });
+        pool.query(quertText, params, (error, results) => {
+            if (error) {
+                throw error;
+            }
+            return results.rows;
+        });
     },
 };
