@@ -46,7 +46,7 @@ module.exports = {
             description: 'Unauthorized Access',
             headers: {},
           },
-          '422': {
+          '400': {
             description: 'Bad Request Data',
             headers: {},
           },
@@ -64,21 +64,14 @@ module.exports = {
         consumes: ['application/x-www-form-urlencoded'],
         parameters: [
           {
-            name: 'Authorization',
-            in: 'header',
-            required: true,
-            type: 'string',
-            description: 'User Authorization token',
-          },
-          {
-            name: 'firstName',
+            name: 'firstname',
             in: 'formData',
             required: true,
             type: 'string',
             description: '',
           },
           {
-            name: 'lastName',
+            name: 'lastname',
             in: 'formData',
             required: true,
             type: 'string',
@@ -106,7 +99,7 @@ module.exports = {
             description: '',
           },
           {
-            name: 'jobRole',
+            name: 'jobrole',
             in: 'formData',
             required: true,
             type: 'string',
@@ -126,10 +119,86 @@ module.exports = {
             type: 'string',
             description: '',
           },
+          {
+            name: 'avatarurl',
+            in: 'formData',
+            required: true,
+            type: 'string',
+            description: '',
+          },
+          {
+            name: 'userrole',
+            in: 'formData',
+            required: true,
+            type: 'string',
+            description: '',
+          },
         ],
         responses: {
           '201': {
             description: 'User created successfully',
+            headers: {},
+          },
+          '401': {
+            description: 'Unauthorized Access',
+            headers: {},
+          },
+          '400': {
+            description: 'Bad Request Data',
+            headers: {},
+          },
+        },
+      },
+    },
+    '/feed': {
+      get: {
+        description: 'Feeds To Get All Articles n Gifs',
+        summary: 'feed',
+        tags: ['Feeds'],
+        operationId: 'feed',
+        deprecated: false,
+        produces: ['application/json'],
+        consumes: ['application/x-www-form-urlencoded'],
+        parameters: [
+        ],
+        responses: {
+          '200': {
+            description: 'Successful',
+            headers: {},
+          },
+          '401': {
+            description: 'Unauthorized Access',
+            headers: {},
+          },
+          '400': {
+            description: 'Bad Request Data',
+            headers: {},
+          },
+        },
+      },
+    },
+    '/articles': {
+      post: {
+        description: 'Get All Articles For Admin/Employee',
+        summary: 'Articles',
+        tags: ['Articles'],
+        operationId: 'Articles',
+        deprecated: false,
+        produces: ['application/json'],
+        consumes: ['application/x-www-form-urlencoded'],
+        parameters: [
+        ],
+        responses: {
+          '200': {
+            description: 'Successful',
+            headers: {},
+          },
+          '401': {
+            description: 'Unauthorized Access',
+            headers: {},
+          },
+          '400': {
+            description: 'Bad Request Data',
             headers: {},
           },
         },
