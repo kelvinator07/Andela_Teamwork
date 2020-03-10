@@ -41,7 +41,6 @@ exports.signup = async (req, res) => {
 
     try {
         const rows = await dbQuery.query(createUserQuery, values);
-        return res.status(200).json({ message: `Teamwork App! on Port ${process.env.PORT} and ${rows}` });
         const dbResponse = rows[0];
         delete dbResponse.password;
         const token = jwt.sign(
@@ -121,7 +120,6 @@ exports.signin = async (req, res) => {
     try {
         const rows = await dbQuery.query(signinUserQuery, [email]);
         const dbResponse = rows[0];
-        return res.status(200).json({ message: `Teamwork App! on Port ${process.env.PORT} and ${dbResponse}` });
         if (!dbResponse) {
             errorMessage.error = 'User with this email does not exist';
             return res.status(status.notfound).send(errorMessage);
