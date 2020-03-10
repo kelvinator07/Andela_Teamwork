@@ -19,7 +19,7 @@ app.use(bodyParser.urlencoded({
 }));
 
 app.get('/', (req, res) => {
-  res.status(200).json({ message: 'Welcome To Teamwork App!' });
+  res.status(200).json({ message: `Welcome To Teamwork App! on Port ${process.env.PORT}` });
 });
 
 app.use('/api/v1', feedRoutes);
