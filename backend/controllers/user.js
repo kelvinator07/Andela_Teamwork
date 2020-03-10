@@ -144,7 +144,7 @@ exports.signin = async (req, res) => {
         return res.status(status.success).send(successMessage);
     } catch (error) {
         errorMessage.error = 'Operation was not successful';
-        return res.status(status.error).send(errorMessage);
+        return res.status(status.error).send(error);
     }
 
 
