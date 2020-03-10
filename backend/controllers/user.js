@@ -40,7 +40,7 @@ exports.signup = async (req, res) => {
     ];
 
     try {
-        const rows = await dbQuery.query(createUserQuery, values);
+        const { rows } = await dbQuery.query(createUserQuery, values);
         const dbResponse = rows[0];
         delete dbResponse.password;
         const token = jwt.sign(
@@ -118,7 +118,7 @@ exports.signin = async (req, res) => {
     const signinUserQuery = 'SELECT * FROM users WHERE email = $1';
 
     try {
-        const rows = await dbQuery.query(signinUserQuery, [email]);
+        const { rows } = await dbQuery.query(signinUserQuery, [email]);
         const dbResponse = rows[0];
         if (!dbResponse) {
             errorMessage.error = 'User with this email does not exist';
